@@ -2,11 +2,14 @@
 name = "candle-approx"
 version = "0.1.0"
 edition = "2021"
+description = "Approximate comparison of Candle tensors"
 authors = ["Alexey Gerasev <alexey.gerasev@gmail.com>"]
 homepage = "https://gitlab.com/agerasev/candle-approx"
 repository = "https://gitlab.com/agerasev/candle-approx.git"
 documentation = "https://docs.rs/candle-approx"
-license = "MIT/Apache-2.0"
+keywords = ["blas", "tensor", "machine-learning"]
+categories = ["science"]
+license = "MIT OR Apache-2.0"
 
 [dependencies]
 candle-core = "0.3.2"
