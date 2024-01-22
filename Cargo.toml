@@ -9,4 +9,5 @@ documentation = "https://docs.rs/candle-approx"
 license = "MIT/Apache-2.0"
 
 [dependencies]
-candle = { package = "candle-core", version = "0.3.2" }
+approx = "0.5.1"
+candle-core = "0.3.2"
