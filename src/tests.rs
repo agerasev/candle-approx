@@ -1,12 +1,12 @@
 use crate::{assert_abs_diff_eq, assert_relative_eq};
 use candle_core::{Device::Cpu, Tensor};
 
-const EPS: f64 = 0.98 * crate::DEFAULT_EPSILON;
-const REL_EPS: f64 = 0.98 * crate::DEFAULT_MAX_RELATIVE;
+const EPS: f64 = 0.99 * crate::DEFAULT_EPSILON;
+const REL_EPS: f64 = 0.99 * crate::DEFAULT_MAX_RELATIVE;
 const SHAPE: (usize, usize, usize) = (20, 30, 40);
 
 #[test]
-fn abs_diff() {
+fn abs_diff_eq() {
     let a = Tensor::randn(0.0f32, 1.0, SHAPE, &Cpu).unwrap();
     let noise = a.rand_like(-EPS, EPS).unwrap();
     let b = a.add(&noise).unwrap();
@@ -15,7 +15,7 @@ fn abs_diff() {
 
 #[test]
 #[should_panic]
-fn abs_diff_panic() {
+fn abs_diff_ne() {
     let a = Tensor::randn(0.0f32, 1.0, SHAPE, &Cpu).unwrap();
     let b = (&a + 2.0 * EPS).unwrap();
     assert_abs_diff_eq!(a, b);
