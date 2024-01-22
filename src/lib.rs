@@ -1,82 +1,66 @@
-pub use approx;
-use approx::{AbsDiffEq, RelativeEq};
 use candle_core::{Result, Tensor};
-use std::fmt::{self, Debug, Display};
 
-const DEFAULT_EPSILON: f64 = 1e-4;
-const DEFAULT_MAX_RELATIVE: f64 = 1e-4;
+pub const DEFAULT_EPSILON: f64 = 1e-4;
+pub const DEFAULT_MAX_RELATIVE: f64 = 1e-4;
 
-fn abs_diff_eq(a: &Tensor, b: &Tensor, epsilon: f64) -> Result<Tensor> {
+pub fn abs_diff_eq(a: &Tensor, b: &Tensor, epsilon: f64) -> Result<Tensor> {
     a.sub(b)?.abs()?.le(epsilon)
 }
 
-fn relative_eq(a: &Tensor, b: &Tensor, epsilon: f64, max_relative: f64) -> Result<Tensor> {
+pub fn relative_eq(a: &Tensor, b: &Tensor, epsilon: f64, max_relative: f64) -> Result<Tensor> {
     let norm2 = a.abs()?.add(&b.abs()?)?;
     let diff = a.sub(b)?.abs()?;
     diff.le(&(norm2 * (0.5 * max_relative))?.maximum(epsilon)?)
 }
 
-fn all(a: &Tensor) -> Result<bool> {
+pub fn all(a: &Tensor) -> Result<bool> {
     Ok(a.flatten_all()?.min(0)?.to_scalar::<u8>()? != 0)
-}
-
-#[repr(transparent)]
-pub struct PanickingTensor(pub Tensor);
-
-impl PartialEq for PanickingTensor {
-    fn eq(&self, other: &Self) -> bool {
-        all(&self.0.eq(&other.0).unwrap()).unwrap()
-    }
-}
-
-impl AbsDiffEq for PanickingTensor {
-    type Epsilon = f64;
-    fn default_epsilon() -> Self::Epsilon {
-        DEFAULT_EPSILON
-    }
-    fn abs_diff_eq(&self, other: &Self, epsilon: Self::Epsilon) -> bool {
-        all(&abs_diff_eq(&self.0, &other.0, epsilon).unwrap()).unwrap()
-    }
-}
-
-impl RelativeEq for PanickingTensor {
-    fn default_max_relative() -> Self::Epsilon {
-        DEFAULT_MAX_RELATIVE
-    }
-    fn relative_eq(
-        &self,
-        other: &Self,
-        epsilon: Self::Epsilon,
-        max_relative: Self::Epsilon,
-    ) -> bool {
-        all(&relative_eq(&self.0, &other.0, epsilon, max_relative).unwrap()).unwrap()
-    }
-}
-
-impl Debug for PanickingTensor {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        Display::fmt(&self.0, f)
-    }
 }
 
 #[macro_export]
 macro_rules! assert_abs_diff_eq {
-    ($a:expr, $b:expr) => {
-        $crate::approx::assert_abs_diff_eq!(
-            $crate::PanickingTensor($a),
-            $crate::PanickingTensor($b)
-        )
-    };
+    ($a:expr, $b:expr, $eps:expr $(,)?) => {{
+        let (a, b) = (&$a, &$b);
+        let eps = $eps;
+        assert!(
+            $crate::all(&$crate::abs_diff_eq(a, b, eps).unwrap()).unwrap(),
+            "assert_abs_diff_eq failed (epsilon = {:.0e}):\n{}:\n{}\n{}:\n{}",
+            eps,
+            stringify!($a),
+            a,
+            stringify!($b),
+            b,
+        );
+    }};
+    ($a:expr, $b:expr $(,)?) => {{
+        assert_abs_diff_eq!($a, $b, $crate::DEFAULT_EPSILON);
+    }};
 }
 
 #[macro_export]
 macro_rules! assert_relative_eq {
-    ($a:expr, $b:expr) => {
-        $crate::approx::assert_relative_eq!(
-            $crate::PanickingTensor($a),
-            $crate::PanickingTensor($b)
-        )
-    };
+    ($a:expr, $b:expr, $eps:expr, $max_rel:expr $(,)?) => {{
+        let (a, b) = (&$a, &$b);
+        let (eps, max_rel) = ($eps, $max_rel);
+        assert!(
+            $crate::all(&$crate::relative_eq(a, b, eps, max_rel).unwrap()).unwrap(),
+            "assert_relative_eq failed (epsilon = {:.0e}, max_relative = {:.0e}):\n{}:\n{}\n{}:\n{}",
+            eps,
+            max_rel,
+            stringify!($a),
+            a,
+            stringify!($b),
+            b,
+        );
+    }};
+    ($a:expr, $b:expr $(,)?) => {{
+        assert_relative_eq!(
+            $a,
+            $b,
+            $crate::DEFAULT_EPSILON,
+            $crate::DEFAULT_MAX_RELATIVE,
+        );
+    }};
 }
 
 #[cfg(test)]
