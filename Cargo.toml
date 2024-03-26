@@ -1,6 +1,6 @@
 [package]
 name = "candle-approx"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 description = "Approximate comparison of Candle tensors"
 authors = ["Alexey Gerasev <alexey.gerasev@gmail.com>"]
@@ -12,4 +12,4 @@ categories = ["science"]
 license = "MIT OR Apache-2.0"
 
 [dependencies]
-candle-core = "0.3.2"
+candle-core = "0.4.1"
