@@ -1,6 +1,6 @@
 [package]
 name = "candle-approx"
-version = "0.5.0"
+version = "0.5.1"
 edition = "2021"
 description = "Approximate comparison of Candle tensors"
 authors = ["Alexey Gerasev <alexey.gerasev@gmail.com>"]
