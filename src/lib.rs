@@ -18,6 +18,21 @@ pub fn all(a: &Tensor) -> Result<bool> {
 }
 
 #[macro_export]
+macro_rules! assert_eq {
+    ($a:expr, $b:expr $(,)?) => {{
+        let (a, b) = (&$a, &$b);
+        assert!(
+            $crate::all(&a.eq(b).unwrap()).unwrap(),
+            "assert_eq failed:\n{}:\n{}\n{}:\n{}",
+            stringify!($a),
+            a,
+            stringify!($b),
+            b,
+        );
+    }};
+}
+
+#[macro_export]
 macro_rules! assert_abs_diff_eq {
     ($a:expr, $b:expr, $eps:expr $(,)?) => {{
         let (a, b) = (&$a, &$b);
